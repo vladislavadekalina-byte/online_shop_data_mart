@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: fct_payment_control
+    description: >
+      Контроль оплат и возвратов. Одна строка — один нетестовый заказ.
+      Переплата считается до вычитания возвратов.
+    columns:
+      - name: order_id
+        description: Номер заказа.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+      - name: order_amount
+        description: Стоимость заказа.
+      - name: paid_amount
+        description: Сумма успешных оплат без возвратов.
+      - name: refunded_amount
+        description: Сумма успешных возвратов положительным числом.
+      - name: net_paid_amount
+        description: Сумма оплат минус сумма возвратов.
+      - name: overpaid_before_refunds
+        description: Превышение оплаты над стоимостью заказа до возвратов.
+        data_tests:
+          - not_null
+          - non_negative
+      - name: has_overpayment
+        description: Оплата превышает стоимость заказа до возвратов.
+      - name: has_excess_refund
+        description: Возвращено больше денег, чем было оплачено.
+      - name: payment_state
+        description: Состояние оплаты заказа.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - unpaid
+                  - partially_paid
+                  - paid
+                  - overpaid
+      - name: refund_state
+        description: Состояние возврата денег.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - no_refund
+                  - partial_refund
+                  - full_refund
+                  - excess_refund
